@@ -9,9 +9,11 @@ import React, {
 function Asteroid({
   spaceDimension,
   shipRef,
+  onDone,
 }: {
   spaceDimension: DOMRect
   shipRef: MutableRefObject<HTMLDivElement>
+  onDone: () => void
 }) {
   const height = 4
   const width = 4
@@ -25,13 +27,25 @@ function Asteroid({
     y: undefined,
   })
 
-  const [move, setMove] = useState<boolean>()
+  const [moving, setMoving] = useState<boolean>()
   useEffect(
     () => {
+      let left, top
       if (spaceDimension) {
-        const left = Math.random() * spaceDimension.width
-
-        const top = Math.random() * spaceDimension.height
+        const dice = Math.random()
+        if (dice > 0.5) {
+          left = Math.random() * spaceDimension.width
+          top = Math.round(Math.random()) * spaceDimension.height
+          if (top === 0) {
+            top = top - height
+          }
+        } else {
+          left = Math.round(Math.random()) * spaceDimension.width
+          if (left === 0) {
+            left = left - width
+          }
+          top = Math.random() * spaceDimension.height
+        }
 
         const {
           left: shipLeft,
@@ -41,7 +55,6 @@ function Asteroid({
           (shipTop - top - spaceDimension.top) /
             (shipLeft - left - spaceDimension.left)
         )
-        console.log(YToX)
         let x, y
 
         if (left + spaceDimension.left <= shipLeft) {
@@ -88,11 +101,30 @@ function Asteroid({
 
   useEffect(() => {
     const id = setTimeout(() => {
-      setMove(true)
+      setMoving(true)
     }, 1000)
 
     return () => clearTimeout(id)
   }, [])
+
+  useEffect(
+    () => {
+      const id = setInterval(() => {
+        const { top, left } = ref.current.getBoundingClientRect()
+        if (
+          moving &&
+          (left > spaceDimension.left + spaceDimension.width ||
+            left <= spaceDimension.left ||
+            top <= spaceDimension.top ||
+            top > spaceDimension.top + spaceDimension.height)
+        ) {
+          onDone()
+        }
+      }, 100)
+      return () => clearInterval(id)
+    },
+    [moving, onDone, spaceDimension]
+  )
 
   return (
     <div
@@ -105,8 +137,8 @@ function Asteroid({
         position: 'absolute',
         top: data.top,
         left: data.left,
-        transition: 'transform 3s linear',
-        transform: move && `translate(${data.x}px,${data.y}px)`,
+        transition: 'transform 5s linear',
+        transform: moving && `translate(${data.x}px,${data.y}px)`,
       }}
     />
   )
@@ -142,7 +174,7 @@ function App() {
 
   const [dimension, setDimension] = useState<DOMRect>()
   const [asteroids, setAsteroids] = useState(() => {
-    return Array.from({ length: 100 }).map((_, index) => {
+    return Array.from({ length: 50 }).map((_, index) => {
       return {
         id: index,
       }
@@ -156,6 +188,12 @@ function App() {
     },
     [spaceRef]
   )
+
+  function handleDone(id) {
+    const updated = asteroids.filter((a) => a.id !== id)
+    updated.push({ id: Date.now() })
+    setAsteroids(updated)
+  }
   return (
     <div
       style={{
@@ -164,7 +202,7 @@ function App() {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        // overflow: 'hidden',
+        overflow: 'hidden',
       }}
     >
       <div
@@ -175,15 +213,16 @@ function App() {
           width: '90%',
           height: '30%',
           minHeight: 320,
-          // overflow: 'hidden',
+          overflow: 'hidden',
         }}
       >
-        {asteroids.map((asteroid) => {
+        {asteroids.map((a) => {
           return (
             <Asteroid
+              onDone={() => handleDone(a.id)}
               spaceDimension={dimension}
               shipRef={shipRef}
-              key={asteroid.id}
+              key={a.id}
             />
           )
         })}

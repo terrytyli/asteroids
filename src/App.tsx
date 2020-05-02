@@ -47,9 +47,9 @@ function Asteroid({
         if (left + spaceDimension.left <= shipLeft) {
           x = spaceDimension.width - left
           if (top + spaceDimension.top > shipTop) {
-            y = -x * YToX
+            y = -x * YToX - width
             if (Math.abs(y) > top) {
-              y = -top
+              y = -top - width
               x = top / YToX
             }
           } else {
@@ -60,11 +60,11 @@ function Asteroid({
             }
           }
         } else {
-          x = -left
+          x = -left - width
           if (top + spaceDimension.top > shipTop) {
             y = -left * YToX
             if (Math.abs(y) > top) {
-              y = -top
+              y = -top - width
               x = -top / YToX
             }
           } else {

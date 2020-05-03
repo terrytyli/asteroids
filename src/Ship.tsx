@@ -9,9 +9,13 @@ import React, {
 const ShipForwardRef = forwardRef<
   HTMLDivElement,
   {
+    isOver: boolean
     spaceDimension: DOMRect
   }
->(function _Ship({ spaceDimension }, ref: MutableRefObject<HTMLDivElement>) {
+>(function _Ship(
+  { spaceDimension, isOver },
+  ref: MutableRefObject<HTMLDivElement>
+) {
   const [top, setTop] = useState<number>(0)
   const [left, setLeft] = useState<number>(0)
   const [init, setInit] = useState<boolean>()
@@ -21,6 +25,7 @@ const ShipForwardRef = forwardRef<
   const [movingUp, setMovingUp] = useState<boolean>()
   const [movingDown, setMovingDown] = useState<boolean>()
 
+  const [transition, setTransition] = useState<boolean>()
   const step = 15
   // move up
   useEffect(
@@ -34,7 +39,7 @@ const ShipForwardRef = forwardRef<
         if (shipTop < spaceDimension.top) {
           setTop(0)
         }
-        if (movingUp) {
+        if (movingUp && !isOver) {
           if (shipTop > spaceDimension.top) {
             setTop(top - step)
           }
@@ -43,7 +48,7 @@ const ShipForwardRef = forwardRef<
 
       return () => clearInterval(id)
     },
-    [init, movingUp, ref, spaceDimension, top]
+    [init, isOver, movingUp, ref, spaceDimension, top]
   )
 
   // move down
@@ -62,7 +67,7 @@ const ShipForwardRef = forwardRef<
         if (shipTop + shipHeight > spaceDimension.top + spaceDimension.height) {
           setTop(spaceDimension.height - shipHeight)
         }
-        if (movingDown) {
+        if (movingDown && !isOver) {
           if (
             shipHeight + shipTop <
             spaceDimension.top + spaceDimension.height
@@ -74,7 +79,7 @@ const ShipForwardRef = forwardRef<
 
       return () => clearInterval(id)
     },
-    [init, movingDown, ref, spaceDimension, top]
+    [init, isOver, movingDown, ref, spaceDimension, top]
   )
 
   // move left
@@ -89,7 +94,7 @@ const ShipForwardRef = forwardRef<
         if (shipLeft < spaceDimension.left) {
           setLeft(0)
         }
-        if (movingLeft) {
+        if (movingLeft && !isOver) {
           if (shipLeft > spaceDimension.left) {
             setLeft(left - step)
           }
@@ -98,7 +103,7 @@ const ShipForwardRef = forwardRef<
 
       return () => clearInterval(id)
     },
-    [init, left, movingLeft, ref, spaceDimension]
+    [init, isOver, left, movingLeft, ref, spaceDimension.left]
   )
 
   // move right
@@ -118,7 +123,7 @@ const ShipForwardRef = forwardRef<
           setLeft(spaceDimension.width - shipWidth)
         }
 
-        if (movingRight) {
+        if (movingRight && !isOver) {
           if (
             shipLeft + spaceDimension.left <
             spaceDimension.left + spaceDimension.width
@@ -130,7 +135,7 @@ const ShipForwardRef = forwardRef<
 
       return () => clearInterval(id)
     },
-    [init, left, movingRight, ref, spaceDimension]
+    [init, isOver, left, movingRight, ref, spaceDimension]
   )
 
   // init size
@@ -149,9 +154,13 @@ const ShipForwardRef = forwardRef<
   useEffect(
     () => {
       function handleKeyDown(e) {
-        if (!init) {
+        if (!init || isOver) {
           return
         }
+        if (!transition) {
+          setTransition(true)
+        }
+
         if (e.key === 'ArrowUp') {
           setMovingUp(true)
         }
@@ -173,7 +182,7 @@ const ShipForwardRef = forwardRef<
         window.removeEventListener('keydown', handleKeyDown)
       }
     },
-    [init, left, ref, spaceDimension, top]
+    [init, isOver, left, ref, spaceDimension, top, transition]
   )
 
   useEffect(
@@ -203,11 +212,26 @@ const ShipForwardRef = forwardRef<
     [init]
   )
 
+  useEffect(
+    () => {
+      if (isOver) {
+        setMovingUp(false)
+
+        setMovingDown(false)
+
+        setMovingLeft(false)
+
+        setMovingRight(false)
+      }
+    },
+    [isOver]
+  )
+
   return (
     <div
       style={{
         position: 'absolute',
-        transition: 'transform .5s ease-out',
+        transition: transition && 'transform .5s linear',
         transform: `translate(${left}px, ${top}px)`,
         fontSize: 24,
       }}

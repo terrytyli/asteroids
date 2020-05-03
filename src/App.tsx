@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { Asteroid } from './Asteroid'
 import { Ship } from './Ship'
 
@@ -6,9 +6,10 @@ function App() {
   const spaceRef = useRef<HTMLDivElement>(null)
   const shipRef = useRef<HTMLDivElement>(null)
 
+  const [isOver, setIsOver] = useState<boolean>()
   const [dimension, setDimension] = useState<DOMRect>()
   const [asteroids, setAsteroids] = useState(() => {
-    return Array.from({ length: 30 }).map((_, index) => {
+    return Array.from({ length: 5 }).map((_, index) => {
       return {
         id: index,
       }
@@ -23,11 +24,21 @@ function App() {
     [spaceRef]
   )
 
-  function handleDone(id) {
-    const updated = asteroids.filter((a) => a.id !== id)
-    updated.push({ id: Date.now() })
-    setAsteroids(updated)
-  }
+  const handleDismiss = useCallback(
+    (id) => {
+      if (!isOver) {
+        const updated = asteroids.filter((a) => a.id !== id)
+        updated.push({ id: Date.now() })
+        setAsteroids(updated)
+      }
+    },
+    [asteroids, isOver]
+  )
+
+  const handleHit = useCallback(() => {
+    setIsOver(true)
+  }, [])
+
   return (
     <div
       style={{
@@ -53,7 +64,9 @@ function App() {
         {asteroids.map((a) => {
           return (
             <Asteroid
-              onDone={() => handleDone(a.id)}
+              onDismiss={() => handleDismiss(a.id)}
+              onHit={handleHit}
+              isOver={isOver}
               spaceDimension={dimension}
               shipRef={shipRef}
               key={a.id}
@@ -61,7 +74,7 @@ function App() {
           )
         })}
 
-        <Ship ref={shipRef} spaceDimension={dimension} />
+        <Ship ref={shipRef} spaceDimension={dimension} isOver={isOver} />
       </div>
     </div>
   )

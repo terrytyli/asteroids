@@ -5,16 +5,21 @@ import React, {
   useState,
   useEffect,
 } from 'react'
+import { useCollision } from './useCollision'
 
 export const Asteroid = memo(
   ({
     spaceDimension,
     shipRef,
-    onDone,
+    onDismiss,
+    onHit,
+    isOver
   }: {
     spaceDimension: DOMRect
     shipRef: MutableRefObject<HTMLDivElement>
-    onDone: () => void
+    onDismiss: () => void
+    onHit: () => void
+    isOver: boolean
   }) => {
     const height = 4
     const width = 4
@@ -28,10 +33,37 @@ export const Asteroid = memo(
       y: undefined,
     })
 
-    const [moving, setMoving] = useState<boolean>()
+    const [started, setStarted] = useState<boolean>()
+
+    const [finishPoint, setFinishPoint]=useState<{x: number,y: number}>()
+
+
+    const collided = useCollision(ref?.current, shipRef?.current)
+
+
+    if(isOver && started && !finishPoint) {
+
+      const {left, top} = ref.current.getBoundingClientRect()
+      setFinishPoint({
+        x:left,y:top
+      })
+    }
+    
+
+
+    useEffect(()=>{
+      if(collided) {
+        onHit()
+      }
+    },[collided, onHit])
+  
+    // moving towards to the target
     useEffect(
       () => {
-        let left, top
+        function getTarget(){
+
+        let left
+        let top
 
         if (spaceDimension) {
           const dice = Math.random()
@@ -97,37 +129,57 @@ export const Asteroid = memo(
             y: y,
           })
         }
+      
+        }
+
+        setTimeout(getTarget,100)
       },
       [shipRef, spaceDimension, windowWidth]
     )
 
+    // delay to start moving
     useEffect(() => {
       const id = setTimeout(() => {
-        setMoving(true)
-      }, Math.random() * 1000 + 500)
+        setStarted(true)
+      }, 1000+Math.random() * 500)
 
       return () => clearTimeout(id)
     }, [])
 
+    // reach to the edge
     useEffect(
       () => {
         const id = setInterval(() => {
           const { top, left } = ref.current.getBoundingClientRect()
           if (
-            moving &&
+            started &&
             (left > spaceDimension.left + spaceDimension.width ||
               left <= spaceDimension.left ||
               top <= spaceDimension.top ||
               top > spaceDimension.top + spaceDimension.height)
           ) {
-            onDone()
+            onDismiss()
           }
         }, 100)
         return () => clearInterval(id)
       },
-      [moving, onDone, spaceDimension]
+      [started, onDismiss, spaceDimension]
     )
 
+
+    function getTranslate(){
+      let translate
+      if(started){
+        translate = `translate(${data.x}px,${data.y}px)`
+      } 
+      
+      if(isOver){
+        translate = `translate(${finishPoint?.x}px,${finishPoint?.y}px)`
+      }
+
+      return translate
+      
+    }
     return (
       <div
         ref={ref}
@@ -136,11 +188,11 @@ export const Asteroid = memo(
           height,
           width,
           borderRadius: '50%',
-          position: 'absolute',
-          top: data.top,
-          left: data.left,
-          transition: 'transform 5s linear',
-          transform: moving && `translate(${data.x}px,${data.y}px)`,
+          position: isOver?'fixed':'absolute',
+          top: isOver?0:data.top,
+          left: isOver?0:data.left,
+          transition: !isOver && 'transform 5s linear',
+          transform: getTranslate(),
         }}
       />
     )

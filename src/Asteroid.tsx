@@ -13,7 +13,7 @@ export const Asteroid = memo(
     shipRef,
     onDismiss,
     onHit,
-    isOver
+    isOver,
   }: {
     spaceDimension: DOMRect
     shipRef: MutableRefObject<HTMLDivElement>
@@ -35,33 +35,27 @@ export const Asteroid = memo(
 
     const [started, setStarted] = useState<boolean>()
 
-    const [finishPoint, setFinishPoint]=useState<{x: number,y: number}>()
-
+    const [finishPoint, setFinishPoint] = useState<{ x: number; y: number }>()
 
     const collided = useCollision(ref?.current, shipRef?.current)
 
-
-    if(isOver && started && !finishPoint) {
-
-      const {left, top} = ref.current.getBoundingClientRect()
+    if (isOver && started && !finishPoint) {
+      const { left, top } = ref.current.getBoundingClientRect()
       setFinishPoint({
-        x:left,y:top
+        x: left - data.left - spaceDimension.left,
+        y: top - data.top - spaceDimension.top,
       })
     }
-    
 
-
-    useEffect(()=>{
-      if(collided) {
+    useEffect(() => {
+      if (collided) {
         onHit()
       }
-    },[collided, onHit])
-  
-    // moving towards to the target
-    useEffect(
-      () => {
-        function getTarget(){
+    }, [collided, onHit])
 
+    // moving towards to the target
+    useEffect(() => {
+      function getTarget() {
         let left
         let top
 
@@ -85,6 +79,7 @@ export const Asteroid = memo(
             left: shipLeft,
             top: shipTop,
           } = shipRef.current.getBoundingClientRect()
+
           const YToX = Math.abs(
             (shipTop - top - spaceDimension.top) /
               (shipLeft - left - spaceDimension.left)
@@ -129,56 +124,48 @@ export const Asteroid = memo(
             y: y,
           })
         }
-      
-        }
+      }
 
-        setTimeout(getTarget,100)
-      },
-      [shipRef, spaceDimension, windowWidth]
-    )
+      setTimeout(getTarget, 100)
+    }, [shipRef, spaceDimension, windowWidth])
 
     // delay to start moving
     useEffect(() => {
       const id = setTimeout(() => {
         setStarted(true)
-      }, 1000+Math.random() * 500)
+      }, 1000 + Math.random() * 500)
 
       return () => clearTimeout(id)
     }, [])
 
     // reach to the edge
-    useEffect(
-      () => {
-        const id = setInterval(() => {
-          const { top, left } = ref.current.getBoundingClientRect()
-          if (
-            started &&
-            (left > spaceDimension.left + spaceDimension.width ||
-              left <= spaceDimension.left ||
-              top <= spaceDimension.top ||
-              top > spaceDimension.top + spaceDimension.height)
-          ) {
-            onDismiss()
-          }
-        }, 100)
-        return () => clearInterval(id)
-      },
-      [started, onDismiss, spaceDimension]
-    )
+    useEffect(() => {
+      const id = setInterval(() => {
+        const { top, left } = ref.current.getBoundingClientRect()
+        if (
+          started &&
+          (left > spaceDimension.left + spaceDimension.width ||
+            left <= spaceDimension.left ||
+            top <= spaceDimension.top ||
+            top > spaceDimension.top + spaceDimension.height)
+        ) {
+          onDismiss()
+        }
+      }, 100)
+      return () => clearInterval(id)
+    }, [started, onDismiss, spaceDimension])
 
-
-    function getTranslate(){
+    function getTranslate() {
       let translate
-      if(started){
+      if (started) {
         translate = `translate(${data.x}px,${data.y}px)`
-      } 
-      
-      if(isOver){
+      }
+
+      if (isOver) {
         translate = `translate(${finishPoint?.x}px,${finishPoint?.y}px)`
       }
 
       return translate
-      
     }
     return (
       <div
@@ -188,10 +175,10 @@ export const Asteroid = memo(
           height,
           width,
           borderRadius: '50%',
-          position: isOver?'fixed':'absolute',
-          top: isOver?0:data.top,
-          left: isOver?0:data.left,
-          transition: !isOver && 'transform 5s linear',
+          position: 'absolute',
+          top: data.top,
+          left: data.left,
+          transition: 'transform 5s linear',
           transform: getTranslate(),
         }}
       />

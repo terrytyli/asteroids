@@ -16,13 +16,10 @@ function App() {
     })
   })
 
-  useEffect(
-    () => {
-      const dimension = spaceRef.current.getBoundingClientRect()
-      setDimension(dimension)
-    },
-    [spaceRef]
-  )
+  useEffect(() => {
+    const dimension = spaceRef.current.getBoundingClientRect()
+    setDimension(dimension)
+  }, [spaceRef])
 
   const handleDismiss = useCallback(
     (id) => {
@@ -58,6 +55,7 @@ function App() {
           width: '90%',
           height: '30%',
           minHeight: 320,
+          maxWidth: 768,
           overflow: 'hidden',
         }}
       >

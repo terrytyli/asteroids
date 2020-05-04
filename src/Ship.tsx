@@ -24,7 +24,6 @@ const ShipForwardRef = forwardRef<
   const [movingRight, setMovingRight] = useState<boolean>()
   const [movingUp, setMovingUp] = useState<boolean>()
   const [movingDown, setMovingDown] = useState<boolean>()
-  const [transition, setTransition] = useState<boolean>()
 
   const [finishPoint, setFinishPoint] = useState({
     x: undefined,
@@ -33,10 +32,20 @@ const ShipForwardRef = forwardRef<
 
   const step = 15
 
+  // init size
+  useEffect(() => {
+    if (ref.current && spaceDimension && !isOver) {
+      const { width, height } = ref.current.getBoundingClientRect()
+      setTop(Math.floor(spaceDimension.height / 2 - height / 2))
+      setLeft(Math.floor(spaceDimension.width / 2 - width / 2))
+      setInit(true)
+    }
+  }, [isOver, ref, spaceDimension])
+
+  // set finish point
   useEffect(() => {
     if (isOver) {
       const { top, left } = ref.current.getBoundingClientRect()
-      console.log(top, left)
       setFinishPoint({
         x: left,
         y: top,
@@ -140,23 +149,10 @@ const ShipForwardRef = forwardRef<
     return () => clearInterval(id)
   }, [init, isOver, left, movingRight, ref, spaceDimension])
 
-  // init size
-  useEffect(() => {
-    if (ref.current && spaceDimension) {
-      const { width, height } = ref.current.getBoundingClientRect()
-      setTop(Math.floor(spaceDimension.height / 2 - height / 2))
-      setLeft(Math.floor(spaceDimension.width / 2 - width / 2))
-      setInit(true)
-    }
-  }, [ref, spaceDimension])
-
   useEffect(() => {
     function handleKeyDown(e) {
       if (!init || isOver) {
         return
-      }
-      if (!transition) {
-        setTransition(true)
       }
 
       if (e.key === 'ArrowUp') {
@@ -179,7 +175,7 @@ const ShipForwardRef = forwardRef<
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [init, isOver, left, ref, spaceDimension, top, transition])
+  }, [init, isOver, left, ref, spaceDimension, top])
 
   useEffect(() => {
     if (!init) {
@@ -229,13 +225,9 @@ const ShipForwardRef = forwardRef<
             fontSize: 24,
           }}
         >
-          <div
-            style={{
-              transform: 'rotate(268deg)',
-            }}
-          >
+          <div>
             <span role="img" aria-label="rocket">
-              🚀
+              💥
             </span>
           </div>
         </div>
@@ -244,7 +236,7 @@ const ShipForwardRef = forwardRef<
       <div
         style={{
           position: 'absolute',
-          transition: `transform ${!transition ? '0s' : '.5s'} linear`,
+          transition: `transform .5s linear`,
           transform: `translate(${left}px, ${top}px)`,
           fontSize: 24,
           visibility: isOver ? 'hidden' : 'visible',

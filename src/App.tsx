@@ -2,19 +2,45 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { Asteroid } from './Asteroid'
 import { Ship } from './Ship'
 
+function genAsteroids() {
+  return Array.from({ length: 5 }).map((_, index) => {
+    return {
+      id: index,
+    }
+  })
+}
+
 function App() {
   const spaceRef = useRef<HTMLDivElement>(null)
   const shipRef = useRef<HTMLDivElement>(null)
 
   const [isOver, setIsOver] = useState<boolean>()
   const [dimension, setDimension] = useState<DOMRect>()
-  const [asteroids, setAsteroids] = useState(() => {
-    return Array.from({ length: 5 }).map((_, index) => {
-      return {
-        id: index,
+  const [asteroids, setAsteroids] = useState([])
+
+  function reStart() {
+    setIsOver(false)
+    setAsteroids([])
+    setTimeout(() => {
+      setAsteroids(genAsteroids())
+    }, 1000)
+  }
+
+  useEffect(() => {
+    function handleRestart(e) {
+      if (isOver && e.key === 'Enter') {
+        reStart()
       }
-    })
-  })
+    }
+    window.addEventListener('keypress', handleRestart)
+    return () => window.removeEventListener('keypress', handleRestart)
+  }, [isOver])
+
+  useEffect(() => {
+    setTimeout(() => {
+      setAsteroids(genAsteroids())
+    }, 1000)
+  }, [])
 
   useEffect(() => {
     const dimension = spaceRef.current.getBoundingClientRect()
@@ -47,6 +73,7 @@ function App() {
         overflow: 'hidden',
       }}
     >
+      <button onClick={reStart}>restart</button>
       <div
         ref={spaceRef}
         style={{

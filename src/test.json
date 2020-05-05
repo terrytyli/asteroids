@@ -1,0 +1,61 @@
+{
+  "Create react function component": {
+    "prefix": "rc",
+    "body": [
+      "import React from 'react'",
+      "export function ${1:name}() {",
+      "  return (",
+      "    <div>",
+      "      <div>$0</div>",
+      "    </div>",
+      "  )",
+      "}"
+    ]
+  },
+
+  "Use state": {
+    "prefix": "usesta",
+    "body": [
+      "const [${1}, set${1/(.*)/${1:/capitalize}/}] = useState($2)",
+      "$0"
+    ]
+  },
+
+  "Use effect": {
+    "prefix": "useeff",
+    "body": ["useEffect(() => {", "  $1", "}, [])", "$0"]
+  },
+
+  "Use callback": {
+    "prefix": "usecall",
+    "body": ["useCallback(() => {", "  $1", "}, [])", "$0"]
+  },
+
+  "Print to console": {
+    "prefix": "clg",
+    "body": ["console.log($1)", "$0"],
+    "description": "Log output to console"
+  },
+
+  "Try catch": {
+    "prefix": "try",
+    "body": ["try {", "  $1", "} catch (e) {", "  $2", "}", "$0"],
+    "description": "Try catch block"
+  },
+
+  "Create a function": {
+    "prefix": "fun",
+    "body": ["function ${1:functionName}($2) {", "  $0", "}"],
+    "description": "Create a function"
+  },
+  "Create test": {
+    "prefix": "test",
+    "body": ["test('$1', () => {", "\t\t", "})"],
+    "description": "Create test"
+  },
+  "Create arrow function": {
+    "prefix": "af",
+    "body": ["() => {$1}", "\t", "$0"],
+    "description": "Create arrow function"
+  }
+}

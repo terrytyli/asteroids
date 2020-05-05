@@ -1,6 +1,8 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Asteroid } from './Asteroid'
+import { Message } from './Message'
 import { Ship } from './Ship'
+import { Timer } from './Timer'
 
 function genAsteroids() {
   return Array.from({ length: 5 }).map((_, index) => {
@@ -18,13 +20,34 @@ function App() {
   const [dimension, setDimension] = useState<DOMRect>()
   const [asteroids, setAsteroids] = useState([])
 
+  const [startTime, setStartTime] = useState<number>()
+  const [endTime, setEndTime] = useState<number>()
+  const [isNewRecord, setIsNewRecord] = useState<boolean>()
+  const [record, setRecord] = useState<number>(() => {
+    const pb = localStorage.getItem('asteroids-pb')
+    if (pb) {
+      return Number(pb)
+    }
+  })
+
   function reStart() {
     setIsOver(false)
+    setIsNewRecord(false)
     setAsteroids([])
-    setTimeout(() => {
+
+    setStartTime(Date.now())
+    setEndTime(undefined)
+
+    const id = setTimeout(() => {
       setAsteroids(genAsteroids())
     }, 1000)
+
+    return () => clearTimeout(id)
   }
+
+  useEffect(() => {
+    reStart()
+  }, [])
 
   useEffect(() => {
     function handleRestart(e) {
@@ -35,12 +58,6 @@ function App() {
     window.addEventListener('keypress', handleRestart)
     return () => window.removeEventListener('keypress', handleRestart)
   }, [isOver])
-
-  useEffect(() => {
-    setTimeout(() => {
-      setAsteroids(genAsteroids())
-    }, 1000)
-  }, [])
 
   useEffect(() => {
     const dimension = spaceRef.current.getBoundingClientRect()
@@ -60,7 +77,16 @@ function App() {
 
   const handleHit = useCallback(() => {
     setIsOver(true)
-  }, [])
+    const et = Date.now()
+    setEndTime(et)
+
+    const pb = et - startTime
+    if (!record || pb > record) {
+      setIsNewRecord(true)
+      setRecord(pb)
+      localStorage.setItem('asteroids-pb', String(pb))
+    }
+  }, [record, startTime])
 
   return (
     <div
@@ -73,7 +99,6 @@ function App() {
         overflow: 'hidden',
       }}
     >
-      <button onClick={reStart}>restart</button>
       <div
         ref={spaceRef}
         style={{
@@ -86,6 +111,17 @@ function App() {
           overflow: 'hidden',
         }}
       >
+        <div style={{ color: '#b5b5b5', fontSize: 13 }}>
+          <Timer startTime={startTime} endTime={endTime}></Timer>
+        </div>
+        {/* {isOver && endTime && <Message time={endTime - startTime}></Message>} */}
+        {isOver && endTime && (
+          <Message
+            onClick={reStart}
+            time={((endTime - startTime) / 1000).toFixed(2)}
+            isNewRecord={isNewRecord}
+          ></Message>
+        )}
         {asteroids.map((a) => {
           return (
             <Asteroid

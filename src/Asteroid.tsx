@@ -126,14 +126,15 @@ export const Asteroid = memo(
         }
       }
 
-      setTimeout(getTarget, 100)
+      const id = setTimeout(getTarget, 100)
+      return () => clearTimeout(id)
     }, [shipRef, spaceDimension, windowWidth])
 
     // delay to start moving
     useEffect(() => {
       const id = setTimeout(() => {
         setStarted(true)
-      }, 1000 + Math.random() * 500)
+      }, 500 + Math.random() * 500)
 
       return () => clearTimeout(id)
     }, [])

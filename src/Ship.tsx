@@ -10,12 +10,9 @@ const ShipForwardRef = forwardRef<
   HTMLDivElement,
   {
     isOver: boolean
-    spaceDimension: DOMRect
+    spaceRef: MutableRefObject<HTMLDivElement>
   }
->(function _Ship(
-  { spaceDimension, isOver },
-  ref: MutableRefObject<HTMLDivElement>
-) {
+>(function _Ship({ spaceRef, isOver }, ref: MutableRefObject<HTMLDivElement>) {
   const [top, setTop] = useState<number>(0)
   const [left, setLeft] = useState<number>(0)
   const [init, setInit] = useState<boolean>()
@@ -34,13 +31,14 @@ const ShipForwardRef = forwardRef<
 
   // init size
   useEffect(() => {
+    const spaceDimension = spaceRef.current.getBoundingClientRect()
     if (ref.current && spaceDimension && !isOver) {
       const { width, height } = ref.current.getBoundingClientRect()
       setTop(Math.floor(spaceDimension.height / 2 - height / 2))
       setLeft(Math.floor(spaceDimension.width / 2 - width / 2))
       setInit(true)
     }
-  }, [isOver, ref, spaceDimension])
+  }, [isOver, ref, spaceRef])
 
   // set finish point
   useEffect(() => {
@@ -59,10 +57,14 @@ const ShipForwardRef = forwardRef<
       return
     }
 
+    const spaceDimension = spaceRef.current?.getBoundingClientRect()
     const id = setInterval(() => {
-      const { top: shipTop } = ref.current.getBoundingClientRect()
+      const {
+        top: shipTop,
+        height: shipHeight,
+      } = ref.current.getBoundingClientRect()
       if (shipTop < spaceDimension.top) {
-        setTop(0)
+        setTop(shipHeight)
       }
       if (movingUp && !isOver) {
         if (shipTop > spaceDimension.top) {
@@ -72,7 +74,7 @@ const ShipForwardRef = forwardRef<
     }, 100)
 
     return () => clearInterval(id)
-  }, [init, isOver, movingUp, ref, spaceDimension, top])
+  }, [init, isOver, movingUp, ref, spaceRef, top])
 
   // move down
   useEffect(() => {
@@ -80,6 +82,7 @@ const ShipForwardRef = forwardRef<
       return
     }
 
+    const spaceDimension = spaceRef.current?.getBoundingClientRect()
     const id = setInterval(() => {
       const {
         top: shipTop,
@@ -87,7 +90,7 @@ const ShipForwardRef = forwardRef<
       } = ref.current.getBoundingClientRect()
 
       if (shipTop + shipHeight > spaceDimension.top + spaceDimension.height) {
-        setTop(spaceDimension.height - shipHeight)
+        setTop(spaceDimension.height - shipHeight * 2)
       }
       if (movingDown && !isOver) {
         if (shipHeight + shipTop < spaceDimension.top + spaceDimension.height) {
@@ -97,7 +100,7 @@ const ShipForwardRef = forwardRef<
     }, 100)
 
     return () => clearInterval(id)
-  }, [init, isOver, movingDown, ref, spaceDimension, top])
+  }, [init, isOver, movingDown, ref, spaceRef, top])
 
   // move left
   useEffect(() => {
@@ -105,10 +108,15 @@ const ShipForwardRef = forwardRef<
       return
     }
 
+    const spaceDimension = spaceRef.current?.getBoundingClientRect()
+
     const id = setInterval(() => {
-      const { left: shipLeft } = ref.current.getBoundingClientRect()
+      const {
+        left: shipLeft,
+        width: shiftWidth,
+      } = ref.current.getBoundingClientRect()
       if (shipLeft < spaceDimension.left) {
-        setLeft(0)
+        setLeft(shiftWidth)
       }
       if (movingLeft && !isOver) {
         if (shipLeft > spaceDimension.left) {
@@ -118,13 +126,15 @@ const ShipForwardRef = forwardRef<
     }, 100)
 
     return () => clearInterval(id)
-  }, [init, isOver, left, movingLeft, ref, spaceDimension])
+  }, [init, isOver, left, movingLeft, ref, spaceRef])
 
   // move right
   useEffect(() => {
     if (!init) {
       return
     }
+
+    const spaceDimension = spaceRef.current?.getBoundingClientRect()
 
     const id = setInterval(() => {
       const {
@@ -133,7 +143,7 @@ const ShipForwardRef = forwardRef<
       } = ref.current.getBoundingClientRect()
 
       if (shipLeft + shipWidth > spaceDimension.left + spaceDimension.width) {
-        setLeft(spaceDimension.width - shipWidth)
+        setLeft(spaceDimension.width - shipWidth * 2)
       }
 
       if (movingRight && !isOver) {
@@ -147,7 +157,7 @@ const ShipForwardRef = forwardRef<
     }, 100)
 
     return () => clearInterval(id)
-  }, [init, isOver, left, movingRight, ref, spaceDimension])
+  }, [init, isOver, left, movingRight, ref, spaceRef])
 
   useEffect(() => {
     function handleKeyDown(e) {
@@ -175,7 +185,7 @@ const ShipForwardRef = forwardRef<
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [init, isOver, left, ref, spaceDimension, top])
+  }, [init, isOver, left, ref, top])
 
   useEffect(() => {
     if (!init) {

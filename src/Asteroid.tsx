@@ -9,13 +9,13 @@ import { useCollision } from './useCollision'
 
 export const Asteroid = memo(
   ({
-    spaceDimension,
+    spaceRef,
     shipRef,
     onDismiss,
     onHit,
     isOver,
   }: {
-    spaceDimension: DOMRect
+    spaceRef: MutableRefObject<HTMLDivElement>
     shipRef: MutableRefObject<HTMLDivElement>
     onDismiss: () => void
     onHit: () => void
@@ -39,19 +39,22 @@ export const Asteroid = memo(
 
     const collided = useCollision(ref?.current, shipRef?.current)
 
-    if (isOver && started && !finishPoint) {
-      const { left, top } = ref.current.getBoundingClientRect()
-      setFinishPoint({
-        x: left - data.left - spaceDimension.left,
-        y: top - data.top - spaceDimension.top,
-      })
-    }
+    useEffect(() => {
+      const spaceDimension = spaceRef.current?.getBoundingClientRect()
+      if (isOver && started && !finishPoint) {
+        const { left, top } = ref.current.getBoundingClientRect()
+        setFinishPoint({
+          x: left - data.left - spaceDimension.left,
+          y: top - data.top - spaceDimension.top,
+        })
+      }
+    }, [data, finishPoint, isOver, spaceRef, started])
 
     useEffect(() => {
-      if (collided) {
+      if (collided && !isOver) {
         onHit()
       }
-    }, [collided, onHit])
+    }, [collided, isOver, onHit])
 
     // moving towards to the target
     useEffect(() => {
@@ -59,6 +62,7 @@ export const Asteroid = memo(
         let left
         let top
 
+        const spaceDimension = spaceRef.current?.getBoundingClientRect()
         if (spaceDimension) {
           const dice = Math.random()
           if (dice > 0.5) {
@@ -128,7 +132,7 @@ export const Asteroid = memo(
 
       const id = setTimeout(getTarget, 100)
       return () => clearTimeout(id)
-    }, [shipRef, spaceDimension, windowWidth])
+    }, [shipRef, spaceRef, windowWidth])
 
     // delay to start moving
     useEffect(() => {
@@ -141,6 +145,7 @@ export const Asteroid = memo(
 
     // reach to the edge
     useEffect(() => {
+      const spaceDimension = spaceRef.current?.getBoundingClientRect()
       const id = setInterval(() => {
         const { top, left } = ref.current.getBoundingClientRect()
         if (
@@ -154,7 +159,7 @@ export const Asteroid = memo(
         }
       }, 100)
       return () => clearInterval(id)
-    }, [started, onDismiss, spaceDimension])
+    }, [started, onDismiss, spaceRef])
 
     function getTranslate() {
       let translate

@@ -5,7 +5,7 @@ import { Ship } from './Ship'
 import { Timer } from './Timer'
 
 function genAsteroids() {
-  return Array.from({ length: 5 }).map((_, index) => {
+  return Array.from({ length: 50 }).map((_, index) => {
     return {
       id: index,
     }
@@ -17,7 +17,6 @@ function App() {
   const shipRef = useRef<HTMLDivElement>(null)
 
   const [isOver, setIsOver] = useState<boolean>()
-  const [dimension, setDimension] = useState<DOMRect>()
   const [asteroids, setAsteroids] = useState([])
 
   const [startTime, setStartTime] = useState<number>()
@@ -30,39 +29,35 @@ function App() {
     }
   })
 
-  function reStart() {
-    setIsOver(false)
+  const reStart = useCallback(() => {
     setIsNewRecord(false)
     setAsteroids([])
 
     setStartTime(Date.now())
     setEndTime(undefined)
 
+    setIsOver(false)
+
     const id = setTimeout(() => {
       setAsteroids(genAsteroids())
     }, 1000)
 
     return () => clearTimeout(id)
-  }
-
-  useEffect(() => {
-    reStart()
   }, [])
 
   useEffect(() => {
+    reStart()
+  }, [reStart])
+
+  useEffect(() => {
     function handleRestart(e) {
-      if (isOver && e.key === 'Enter') {
+      if (e.key === 'Enter') {
         reStart()
       }
     }
     window.addEventListener('keypress', handleRestart)
     return () => window.removeEventListener('keypress', handleRestart)
-  }, [isOver])
-
-  useEffect(() => {
-    const dimension = spaceRef.current.getBoundingClientRect()
-    setDimension(dimension)
-  }, [spaceRef])
+  }, [reStart])
 
   const handleDismiss = useCallback(
     (id) => {
@@ -80,11 +75,11 @@ function App() {
     const et = Date.now()
     setEndTime(et)
 
-    const pb = et - startTime
-    if (!record || pb > record) {
+    const lapse = et - startTime
+    if (!record || lapse > record) {
       setIsNewRecord(true)
-      setRecord(pb)
-      localStorage.setItem('asteroids-pb', String(pb))
+      setRecord(lapse)
+      localStorage.setItem('asteroids-pb', String(lapse))
     }
   }, [record, startTime])
 
@@ -114,7 +109,6 @@ function App() {
         <div style={{ color: '#b5b5b5', fontSize: 13 }}>
           <Timer startTime={startTime} endTime={endTime}></Timer>
         </div>
-        {/* {isOver && endTime && <Message time={endTime - startTime}></Message>} */}
         {isOver && endTime && (
           <Message
             onClick={reStart}
@@ -128,14 +122,14 @@ function App() {
               onDismiss={() => handleDismiss(a.id)}
               onHit={handleHit}
               isOver={isOver}
-              spaceDimension={dimension}
+              spaceRef={spaceRef}
               shipRef={shipRef}
               key={a.id}
             />
           )
         })}
 
-        <Ship ref={shipRef} spaceDimension={dimension} isOver={isOver} />
+        <Ship ref={shipRef} spaceRef={spaceRef} isOver={isOver} />
       </div>
     </div>
   )

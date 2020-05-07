@@ -18,14 +18,14 @@ export function Message({ time, isNewRecord = false, onClick }) {
       }}
     >
       {isNewRecord && (
-        <div>
+        <div style={{ fontSize: 32 }}>
           <span role="img" aria-label="diamond">
             💎
           </span>{' '}
           New Record!
         </div>
       )}
-      <div style={{ marginBottom: 24, fontSize: 32 }}>
+      <div style={{ marginBottom: 24, fontSize: 26 }}>
         You last {time} seconds!
       </div>
       <div style={{ position: 'relative', fontSize: 26 }}>

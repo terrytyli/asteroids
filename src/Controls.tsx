@@ -16,7 +16,18 @@ function Button({
     <button
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
-      style={{ color: 'white', background: 'none', border: 0, ...style }}
+      style={{
+        fontSize: 32,
+        color: 'white',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 8,
+        background: 'none',
+        border: 0,
+        outline: 0,
+        ...style,
+      }}
     >
       {children}
     </button>
@@ -54,7 +65,7 @@ export function Controls({
 
       <div>
         <Button
-          style={{ marginRight: 24 }}
+          style={{ marginRight: 84 }}
           onTouchStart={() =>
             setMoving({
               ...moving,

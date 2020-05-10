@@ -14,7 +14,7 @@ export interface MovingStatus {
 const isTouchDevice = 'ontouchstart' in document.documentElement
 
 function genAsteroids() {
-  return Array.from({ length: 10 }).map((_, index) => {
+  return Array.from({ length: 5 }).map((_, index) => {
     return {
       id: index,
     }
@@ -103,7 +103,7 @@ function App() {
     <div
       style={{
         background: '#000',
-        height: '100vh',
+        height: isTouchDevice ? '90vh' : '100vh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',

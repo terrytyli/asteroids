@@ -3,9 +3,18 @@ import { Asteroid } from './Asteroid'
 import { Message } from './Message'
 import { Ship } from './Ship'
 import { Timer } from './Timer'
+import { Controls } from './Controls'
+
+export interface MovingStatus {
+  up: boolean
+  down: boolean
+  left: boolean
+  right: boolean
+}
+const isTouchDevice = 'ontouchstart' in document.documentElement
 
 function genAsteroids() {
-  return Array.from({ length: 50 }).map((_, index) => {
+  return Array.from({ length: 0 }).map((_, index) => {
     return {
       id: index,
     }
@@ -18,6 +27,13 @@ function App() {
 
   const [isOver, setIsOver] = useState<boolean>()
   const [asteroids, setAsteroids] = useState([])
+
+  const [moving, setMoving] = useState<MovingStatus>({
+    up: false,
+    down: false,
+    right: false,
+    left: false,
+  })
 
   const [startTime, setStartTime] = useState<number>()
   const [endTime, setEndTime] = useState<number>()
@@ -89,6 +105,7 @@ function App() {
         background: '#000',
         height: '100vh',
         display: 'flex',
+        flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
@@ -101,7 +118,7 @@ function App() {
           border: '1px solid #fff',
           width: '90%',
           height: '30%',
-          minHeight: 320,
+          minHeight: 280,
           maxWidth: 768,
           overflow: 'hidden',
         }}
@@ -129,8 +146,19 @@ function App() {
           )
         })}
 
-        <Ship ref={shipRef} spaceRef={spaceRef} isOver={isOver} />
+        <Ship
+          ref={shipRef}
+          spaceRef={spaceRef}
+          isOver={isOver}
+          moving={moving}
+          setMoving={setMoving}
+        />
       </div>
+      {isTouchDevice && (
+        <div style={{ marginTop: 12 }}>
+          <Controls moving={moving} setMoving={setMoving}></Controls>
+        </div>
+      )}
     </div>
   )
 }

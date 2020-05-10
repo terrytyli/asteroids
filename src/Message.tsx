@@ -8,11 +8,10 @@ export function Message({ time, isNewRecord = false, onClick }) {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        background: '#000',
         border: '1px solid #fff',
         borderRadius: 4,
         padding: 16,
-        zIndex: 1,
+        zIndex: 2,
         width: '80%',
         textAlign: 'center',
       }}
@@ -25,7 +24,7 @@ export function Message({ time, isNewRecord = false, onClick }) {
           New Record!
         </div>
       )}
-      <div style={{ marginBottom: 24, fontSize: 26 }}>
+      <div style={{ marginBottom: 24, fontSize: 26, background: '#000' }}>
         You last {time} seconds!
       </div>
       <div style={{ position: 'relative', fontSize: 26 }}>
@@ -34,23 +33,14 @@ export function Message({ time, isNewRecord = false, onClick }) {
           style={{
             fontSize: 24,
             borderRadius: 4,
-            background: 'none',
+            background: '#000',
             color: '#fff',
+            padding: '8px 16px',
+            border: '2px solid white',
           }}
         >
-          Restart
+          Restart ↩
         </button>
-        <div
-          style={{
-            fontSize: 14,
-            position: 'absolute',
-            top: '23%',
-            right: '17%',
-            color: '#b5b5b5',
-          }}
-        >
-          or type Enter
-        </div>
       </div>
     </div>
   )

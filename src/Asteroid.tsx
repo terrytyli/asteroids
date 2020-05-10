@@ -27,8 +27,8 @@ export const Asteroid = memo(
 
     const ref = useRef<HTMLDivElement>()
     const [data, setData] = useState({
-      top: undefined,
-      left: undefined,
+      top: -2,
+      left: -2,
       x: undefined,
       y: undefined,
     })
@@ -145,6 +145,10 @@ export const Asteroid = memo(
 
     // reach to the edge
     useEffect(() => {
+      if (isOver) {
+        return
+      }
+
       const spaceDimension = spaceRef.current?.getBoundingClientRect()
       const id = setInterval(() => {
         const { top, left } = ref.current.getBoundingClientRect()
@@ -159,7 +163,7 @@ export const Asteroid = memo(
         }
       }, 100)
       return () => clearInterval(id)
-    }, [started, onDismiss, spaceRef])
+    }, [started, onDismiss, spaceRef, isOver])
 
     function getTranslate() {
       let translate

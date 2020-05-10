@@ -5,22 +5,23 @@ import React, {
   useEffect,
   useState,
 } from 'react'
+import { MovingStatus } from './App'
 
 const ShipForwardRef = forwardRef<
   HTMLDivElement,
   {
     isOver: boolean
     spaceRef: MutableRefObject<HTMLDivElement>
+    moving: MovingStatus
+    setMoving: (m: MovingStatus) => void
   }
->(function _Ship({ spaceRef, isOver }, ref: MutableRefObject<HTMLDivElement>) {
+>(function _Ship(
+  { spaceRef, isOver, moving, setMoving },
+  ref: MutableRefObject<HTMLDivElement>
+) {
   const [top, setTop] = useState<number>(0)
   const [left, setLeft] = useState<number>(0)
   const [init, setInit] = useState<boolean>()
-
-  const [movingLeft, setMovingLeft] = useState<boolean>()
-  const [movingRight, setMovingRight] = useState<boolean>()
-  const [movingUp, setMovingUp] = useState<boolean>()
-  const [movingDown, setMovingDown] = useState<boolean>()
 
   const [finishPoint, setFinishPoint] = useState({
     x: undefined,
@@ -53,7 +54,7 @@ const ShipForwardRef = forwardRef<
 
   // move up
   useEffect(() => {
-    if (!init) {
+    if (!init || isOver) {
       return
     }
 
@@ -66,7 +67,7 @@ const ShipForwardRef = forwardRef<
       if (shipTop < spaceDimension.top) {
         setTop(shipHeight)
       }
-      if (movingUp && !isOver) {
+      if (moving.up) {
         if (shipTop > spaceDimension.top) {
           setTop(top - step)
         }
@@ -74,11 +75,11 @@ const ShipForwardRef = forwardRef<
     }, 100)
 
     return () => clearInterval(id)
-  }, [init, isOver, movingUp, ref, spaceRef, top])
+  }, [init, isOver, moving.up, ref, spaceRef, top])
 
   // move down
   useEffect(() => {
-    if (!init) {
+    if (!init || isOver) {
       return
     }
 
@@ -92,7 +93,7 @@ const ShipForwardRef = forwardRef<
       if (shipTop + shipHeight > spaceDimension.top + spaceDimension.height) {
         setTop(spaceDimension.height - shipHeight * 2)
       }
-      if (movingDown && !isOver) {
+      if (moving.down) {
         if (shipHeight + shipTop < spaceDimension.top + spaceDimension.height) {
           setTop(top + step)
         }
@@ -100,11 +101,11 @@ const ShipForwardRef = forwardRef<
     }, 100)
 
     return () => clearInterval(id)
-  }, [init, isOver, movingDown, ref, spaceRef, top])
+  }, [init, isOver, moving.down, ref, spaceRef, top])
 
   // move left
   useEffect(() => {
-    if (!init) {
+    if (!init || isOver) {
       return
     }
 
@@ -118,7 +119,7 @@ const ShipForwardRef = forwardRef<
       if (shipLeft < spaceDimension.left) {
         setLeft(shiftWidth)
       }
-      if (movingLeft && !isOver) {
+      if (moving.left) {
         if (shipLeft > spaceDimension.left) {
           setLeft(left - step)
         }
@@ -126,11 +127,11 @@ const ShipForwardRef = forwardRef<
     }, 100)
 
     return () => clearInterval(id)
-  }, [init, isOver, left, movingLeft, ref, spaceRef])
+  }, [init, isOver, left, moving.left, ref, spaceRef])
 
   // move right
   useEffect(() => {
-    if (!init) {
+    if (!init || isOver) {
       return
     }
 
@@ -146,7 +147,7 @@ const ShipForwardRef = forwardRef<
         setLeft(spaceDimension.width - shipWidth * 2)
       }
 
-      if (movingRight && !isOver) {
+      if (moving.right) {
         if (
           shipLeft + spaceDimension.left <
           spaceDimension.left + spaceDimension.width
@@ -157,7 +158,7 @@ const ShipForwardRef = forwardRef<
     }, 100)
 
     return () => clearInterval(id)
-  }, [init, isOver, left, movingRight, ref, spaceRef])
+  }, [init, isOver, left, moving.right, ref, spaceRef])
 
   useEffect(() => {
     function handleKeyDown(e) {
@@ -166,17 +167,29 @@ const ShipForwardRef = forwardRef<
       }
 
       if (e.key === 'ArrowUp') {
-        setMovingUp(true)
+        setMoving({
+          ...moving,
+          up: true,
+        })
       }
       if (e.key === 'ArrowDown') {
-        setMovingDown(true)
+        setMoving({
+          ...moving,
+          down: true,
+        })
       }
 
       if (e.key === 'ArrowLeft') {
-        setMovingLeft(true)
+        setMoving({
+          ...moving,
+          left: true,
+        })
       }
       if (e.key === 'ArrowRight') {
-        setMovingRight(true)
+        setMoving({
+          ...moving,
+          right: true,
+        })
       }
     }
 
@@ -185,7 +198,7 @@ const ShipForwardRef = forwardRef<
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [init, isOver, left, ref, top])
+  }, [init, isOver, moving, setMoving])
 
   useEffect(() => {
     if (!init) {
@@ -194,34 +207,45 @@ const ShipForwardRef = forwardRef<
 
     function handleKeyUp(e) {
       if (e.key === 'ArrowUp') {
-        setMovingUp(false)
+        setMoving({
+          ...moving,
+          up: false,
+        })
       }
       if (e.key === 'ArrowDown') {
-        setMovingDown(false)
+        setMoving({
+          ...moving,
+          down: false,
+        })
       }
       if (e.key === 'ArrowLeft') {
-        setMovingLeft(false)
+        setMoving({
+          ...moving,
+          left: false,
+        })
       }
       if (e.key === 'ArrowRight') {
-        setMovingRight(false)
+        setMoving({
+          ...moving,
+          right: false,
+        })
       }
     }
     window.addEventListener('keyup', handleKeyUp)
 
     return () => window.removeEventListener('keyup', handleKeyUp)
-  }, [init])
+  }, [init, moving, setMoving])
 
   useEffect(() => {
     if (isOver) {
-      setMovingUp(false)
-
-      setMovingDown(false)
-
-      setMovingLeft(false)
-
-      setMovingRight(false)
+      setMoving({
+        up: false,
+        down: false,
+        left: false,
+        right: false,
+      })
     }
-  }, [isOver])
+  }, [isOver, setMoving])
 
   return (
     <>

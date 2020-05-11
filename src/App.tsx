@@ -3,7 +3,7 @@ import { Asteroid } from './Asteroid'
 import { Message } from './Message'
 import { Ship } from './Ship'
 import { Timer } from './Timer'
-import { Controls } from './Controls'
+import { isTouchDevice } from './util'
 
 export interface MovingStatus {
   up: boolean
@@ -11,10 +11,9 @@ export interface MovingStatus {
   left: boolean
   right: boolean
 }
-const isTouchDevice = 'ontouchstart' in document.documentElement
 
 function genAsteroids() {
-  return Array.from({ length: 5 }).map((_, index) => {
+  return Array.from({ length: 50 }).map((_, index) => {
     return {
       id: index,
     }
@@ -154,11 +153,6 @@ function App() {
           setMoving={setMoving}
         />
       </div>
-      {isTouchDevice && (
-        <div style={{ marginTop: 12 }}>
-          <Controls moving={moving} setMoving={setMoving}></Controls>
-        </div>
-      )}
     </div>
   )
 }

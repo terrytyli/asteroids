@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react'
 import { MovingStatus } from './App'
+import { isTouchDevice } from './util'
 
 const ShipForwardRef = forwardRef<
   HTMLDivElement,
@@ -54,7 +55,7 @@ const ShipForwardRef = forwardRef<
 
   // move up
   useEffect(() => {
-    if (!init || isOver) {
+    if (!init || isOver || isTouchDevice) {
       return
     }
 
@@ -79,7 +80,7 @@ const ShipForwardRef = forwardRef<
 
   // move down
   useEffect(() => {
-    if (!init || isOver) {
+    if (!init || isOver || isTouchDevice) {
       return
     }
 
@@ -105,7 +106,7 @@ const ShipForwardRef = forwardRef<
 
   // move left
   useEffect(() => {
-    if (!init || isOver) {
+    if (!init || isOver || isTouchDevice) {
       return
     }
 
@@ -131,7 +132,7 @@ const ShipForwardRef = forwardRef<
 
   // move right
   useEffect(() => {
-    if (!init || isOver) {
+    if (!init || isOver || isTouchDevice) {
       return
     }
 
@@ -162,7 +163,7 @@ const ShipForwardRef = forwardRef<
 
   useEffect(() => {
     function handleKeyDown(e) {
-      if (!init || isOver) {
+      if (!init || isOver || isTouchDevice) {
         return
       }
 
@@ -201,7 +202,7 @@ const ShipForwardRef = forwardRef<
   }, [init, isOver, moving, setMoving])
 
   useEffect(() => {
-    if (!init) {
+    if (!init || isTouchDevice) {
       return
     }
 
@@ -247,6 +248,28 @@ const ShipForwardRef = forwardRef<
     }
   }, [isOver, setMoving])
 
+  function touchMove(e) {
+    if (isOver) {
+      return
+    }
+    const {
+      left: spaceLeft,
+      top: spaceTop,
+      width: spaceWidth,
+      height: spaceHeight,
+    } = spaceRef.current.getBoundingClientRect()
+    const { width, height } = ref.current.getBoundingClientRect()
+    const { clientX, clientY } = e.touches[0]
+    const left = clientX - spaceLeft - width * 0.5
+    const top = clientY - spaceTop - height * 1.5
+    if (left > 0 && left < spaceWidth - width) {
+      setLeft(left)
+    }
+    if (top > -height && top < spaceHeight - height) {
+      setTop(top)
+    }
+  }
+
   return (
     <>
       {isOver && (
@@ -270,11 +293,13 @@ const ShipForwardRef = forwardRef<
       <div
         style={{
           position: 'absolute',
-          transition: `transform .5s linear`,
+          transition: !isTouchDevice && `transform .5s linear`,
           transform: `translate(${left}px, ${top}px)`,
           fontSize: 24,
           visibility: isOver ? 'hidden' : 'visible',
         }}
+        onTouchStart={touchMove}
+        onTouchMove={touchMove}
         ref={ref}
       >
         <div

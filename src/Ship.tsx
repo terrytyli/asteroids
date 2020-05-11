@@ -260,8 +260,8 @@ const ShipForwardRef = forwardRef<
     } = spaceRef.current.getBoundingClientRect()
     const { width, height } = ref.current.getBoundingClientRect()
     const { clientX, clientY } = e.touches[0]
-    const left = clientX - spaceLeft - width * 0.5
-    const top = clientY - spaceTop - height * 1.5
+    const left = clientX - spaceLeft - width
+    const top = clientY - spaceTop - height * 3
     if (left > 0 && left < spaceWidth - width) {
       setLeft(left)
     }
@@ -293,7 +293,7 @@ const ShipForwardRef = forwardRef<
       <div
         style={{
           position: 'absolute',
-          transition: !isTouchDevice && `transform .5s linear`,
+          transition: `transform ${isTouchDevice ? 0 : 0.5}s linear`,
           transform: `translate(${left}px, ${top}px)`,
           fontSize: 24,
           visibility: isOver ? 'hidden' : 'visible',

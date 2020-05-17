@@ -66,13 +66,13 @@ function App() {
 
   useEffect(() => {
     function handleRestart(e) {
-      if (e.key === 'Enter') {
+      if (isOver && e.key === 'Enter') {
         reStart()
       }
     }
     window.addEventListener('keypress', handleRestart)
     return () => window.removeEventListener('keypress', handleRestart)
-  }, [reStart])
+  }, [isOver, reStart])
 
   const handleDismiss = useCallback(
     (id) => {
